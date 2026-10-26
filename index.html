@@ -1,0 +1,956 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>半導体ドリル</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* レイアウト：暗い「章扉」の帯と、白い誌面の本文を交互に重ねる科学誌スタイル。本文は1段組 */
+:root {
+  --paper: #F4F6F9; --card: #FFFFFF; --ink: #151922; --ink-2: #4B5261; --ink-3: #737B8C; --rule: #DCE0E7;
+  --electron: #2B63D9; --electron-soft: #E4ECFB; --hole: #CF5F1C; --hole-soft: #FBEADF;
+  --silicon: #8B919C; --silicon-soft: #E8EAEE;
+  --ok: #16804F; --ok-soft: #E2F3EA; --ng: #C23B2A; --ng-soft: #FBE6E2;
+  --mark: #0E7472; --mark-soft: #D9F0EE; --uv: #6E46C8;
+  --cine-mark: #F2C14E;
+  --lamp: #F2B53A; --lred: #DE4437; --lgreen: #2E9A4E; --lblue: #3556D8;
+  --cine: #070A13; --cine-ink: #EEF1F7; --cine-dim: #9AA3B8; --cine-line: #26324D; --glow: #86ABFF;
+  --glow-soft: rgba(134,171,255,.14); --glow-mid: rgba(134,171,255,.42); --fin: rgba(170,180,200,.38);
+  --f-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+  --f-body: "Zen Kaku Gothic New", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0D1016; --card: #151922; --ink: #E7EAF0; --ink-2: #AAB1BF; --ink-3: #828A9A; --rule: #272D39;
+  --electron: #719DFF; --electron-soft: #172340; --hole: #FF9552; --hole-soft: #3A2416;
+  --silicon: #8E95A2; --silicon-soft: #232833;
+  --ok: #4CC38A; --ok-soft: #12301F; --ng: #FF7B68; --ng-soft: #3A1C17;
+  --mark: #4FC7C2; --mark-soft: #12302F; --uv: #A98BFF; --lred: #FF6B5E; --lgreen: #4CC36E; --lblue: #7D95FF; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #0D1016; --card: #151922; --ink: #E7EAF0; --ink-2: #AAB1BF; --ink-3: #828A9A; --rule: #272D39;
+  --electron: #719DFF; --electron-soft: #172340; --hole: #FF9552; --hole-soft: #3A2416;
+  --silicon: #8E95A2; --silicon-soft: #232833;
+  --ok: #4CC38A; --ok-soft: #12301F; --ng: #FF7B68; --ng-soft: #3A1C17;
+  --mark: #4FC7C2; --mark-soft: #12302F; --uv: #A98BFF; --lred: #FF6B5E; --lgreen: #4CC36E; --lblue: #7D95FF; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.9; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.col { max-width: 720px; margin: 0 auto; }
+.col-wide { max-width: 880px; margin: 0 auto; }
+
+/* 上部バー */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); border-bottom: 1px solid var(--rule); }
+.topbar .in { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 52px; }
+.brand { background: none; border: 0; padding: 0; font-family: var(--f-display); font-weight: 700; font-size: 17px; letter-spacing: .04em; }
+.dots { display: flex; gap: 6px; align-items: center; }
+.dot { width: 30px; height: 26px; border-radius: 6px; border: 1px solid var(--rule); background: var(--card); font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); display: grid; place-items: center; }
+.dot.done { color: var(--ok); border-color: var(--ok); }
+.dot.cur { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* 章扉（常に暗い映像トーン） */
+.cine { background-color: var(--cine); color: var(--cine-ink);
+  background-image: radial-gradient(circle at 1px 1px, var(--glow-soft) 1.2px, transparent 1.6px), radial-gradient(ellipse 60% 70% at 85% 0%, rgba(134,171,255,.16), transparent 70%);
+  background-size: 22px 22px, 100% 100%; }
+.cine .in { padding-block: clamp(40px, 8vw, 80px); }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .22em; color: var(--cine-dim); margin: 0 0 14px; }
+.headline { font-family: var(--f-display); font-weight: 700; font-size: clamp(28px, 5.4vw, 46px); line-height: 1.45; letter-spacing: .02em; margin: 0 0 18px; text-wrap: balance; }
+.lead { color: var(--cine-dim); margin: 0 0 28px; max-width: 34em; }
+.cine-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--cine-ink); color: var(--cine); border: 0; border-radius: 999px; padding: 12px 24px; font-weight: 700; }
+.cine-btn.ghost { background: transparent; color: var(--cine-ink); border: 1px solid var(--cine-line); }
+
+/* プロローグのズーム */
+.zoom { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 36px; }
+.zf { position: relative; }
+.zf svg { width: 100%; height: auto; display: block; border: 1px solid var(--cine-line); border-radius: 10px; background: rgba(7,10,19,.6); color: var(--cine-ink); }
+.zf + .zf::before { content: "→"; position: absolute; left: -12px; top: calc(50% - 26px); color: var(--cine-dim); font-size: 12px; }
+.zl { display: flex; flex-direction: column; margin-top: 8px; font-size: 13px; line-height: 1.5; }
+.zl .mono { color: var(--cine-dim); font-size: 11px; }
+.z-line { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.z-fill { fill: var(--glow-soft); stroke: var(--glow-mid); }
+.z-hi { fill: none; stroke: var(--cine-mark); stroke-width: 2; }
+.z-fin { fill: var(--fin); } .z-gate { fill: var(--glow-mid); }
+.z-atom { fill: var(--glow); } .z-bond { stroke: var(--glow-mid); stroke-width: 2; }
+.zoom-cap { font-size: 13px; color: var(--cine-dim); margin: 18px 0 0; }
+
+/* 予想クイズ */
+.predict { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 8px; }
+.popt { background: rgba(255,255,255,.03); border: 1px solid var(--cine-line); color: var(--cine-ink); border-radius: 10px; padding: 14px 16px; text-align: left; line-height: 1.6; transition: border-color .2s; }
+.popt:hover { border-color: var(--glow); }
+.popt.right { border-color: #4CC38A; box-shadow: inset 0 0 0 1px #4CC38A; }
+.popt.wrong { border-color: #FF7B68; opacity: .8; }
+.popt[disabled] { cursor: default; }
+.pfb { margin: 14px 0 0; color: var(--cine-ink); min-height: 1.9em; }
+.ptag { font-family: var(--f-mono); font-size: 12px; letter-spacing: .18em; color: var(--glow); margin: 26px 0 10px; }
+
+/* 本文 */
+main { padding-bottom: 40px; }
+.sec { padding-block: 44px 8px; }
+.slabel { display: flex; align-items: center; gap: 12px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .2em; color: var(--ink-3); margin: 0 0 22px; }
+.slabel::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+.prose { max-width: 36em; margin: 0 0 1.1em; }
+.prose b { font-weight: 700; color: var(--ink); background: linear-gradient(transparent 62%, var(--mark-soft) 62%); }
+.h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(21px, 3.4vw, 26px); line-height: 1.5; margin: 1.6em 0 .6em; text-wrap: balance; }
+figure.fig { margin: 28px 0 32px; }
+.fig .frame { background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; overflow-x: auto; }
+.fig svg { display: block; width: 100%; height: auto; min-width: 600px; }
+.fig .scroll-hint { display: none; font-size: 12px; color: var(--ink-3); margin: 0 0 8px; }
+figcaption { font-size: 13px; color: var(--ink-3); margin-top: 10px; line-height: 1.7; }
+figcaption .fn { font-family: var(--f-mono); color: var(--ink-2); margin-right: 8px; }
+.t-h { fill: var(--ink); font: 700 15px var(--f-body); }
+.t-s { fill: var(--ink-2); font: 400 13px var(--f-body); }
+.t-m { fill: var(--ink-3); font: 400 11.5px var(--f-mono); }
+.t-e { fill: var(--electron); font: 700 13px var(--f-body); }
+.t-o { fill: var(--hole); font: 700 13px var(--f-body); }
+.b-up { fill: var(--electron-soft); stroke: var(--electron); stroke-opacity: .45; }
+.b-low { fill: var(--silicon-soft); stroke: var(--silicon); stroke-opacity: .6; }
+.e { fill: var(--electron); } .e-empty { fill: none; stroke: var(--hole); stroke-width: 1.6; stroke-dasharray: 2.5 2; }
+.ln { stroke: var(--ink-3); stroke-width: 1.2; fill: none; }
+.ln-e { stroke: var(--electron); stroke-width: 2; fill: none; }
+.ln-o { stroke: var(--hole); stroke-width: 2; fill: none; }
+.f-card { fill: var(--card); stroke: var(--rule); } .f-si { fill: var(--silicon-soft); stroke: var(--silicon); stroke-opacity: .5; }
+.f-e { fill: var(--electron); } .f-es { fill: var(--electron-soft); stroke: var(--electron); stroke-opacity: .5; }
+.f-o { fill: var(--hole); } .f-os { fill: var(--hole-soft); stroke: var(--hole); stroke-opacity: .5; }
+.f-g { fill: var(--silicon); } .f-ink { fill: var(--ink-2); }
+.t-k { fill: var(--mark); font: 700 13px var(--f-body); } .f-k { fill: var(--mark); } .ln-k { stroke: var(--mark); stroke-width: 2; fill: none; }
+.f-uv { fill: var(--uv); } .ln-uv { stroke: var(--uv); stroke-width: 2; fill: none; }
+
+/* アナロジーカード */
+.analogy { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 22px 22px 16px; margin: 28px 0; }
+.analogy .tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: .2em; color: var(--mark); margin: 0 0 6px; }
+.analogy .ttl { font-family: var(--f-display); font-weight: 700; font-size: 22px; margin: 0 0 14px; }
+.map { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px 14px; align-items: center; font-size: 15px; }
+.map .hd { font-size: 11px; font-family: var(--f-mono); letter-spacing: .14em; color: var(--ink-3); }
+.map .arrow { color: var(--ink-3); text-align: center; }
+.map .real { color: var(--mark); font-weight: 500; }
+details.breaks { margin-top: 14px; border-top: 1px dashed var(--rule); padding-top: 10px; }
+details.breaks summary { cursor: pointer; font-size: 14px; color: var(--ink-2); list-style: none; }
+details.breaks summary::before { content: "▸ "; } details.breaks[open] summary::before { content: "▾ "; }
+details.breaks p { font-size: 14.5px; color: var(--ink-2); margin: 8px 0 4px; }
+
+/* 数字カード */
+.num { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px; padding: 26px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin: 24px 0; }
+.num .big { font-family: var(--f-display); font-weight: 800; font-size: clamp(54px, 11vw, 92px); line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.num .big small { font-size: .42em; margin-left: 4px; color: var(--mark); }
+.num .lbl { flex: 1 1 220px; min-width: 0; color: var(--ink-2); font-size: 15px; line-height: 1.7; }
+.num .lbl b { color: var(--ink); display: block; font-size: 16px; }
+
+/* コラム */
+.column { background: var(--silicon-soft); border-radius: 14px; padding: 22px; margin: 30px 0; }
+.column .tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: .2em; color: var(--ink-3); margin: 0 0 4px; }
+.column .ttl { font-family: var(--f-display); font-weight: 700; font-size: 19px; margin: 0 0 8px; }
+.column p { margin: 0 0 .8em; font-size: 15px; color: var(--ink-2); }
+.column p:last-child { margin-bottom: 0; }
+
+/* 発見のロック */
+.locked { border: 1px dashed var(--rule); border-radius: 12px; padding: 22px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.btn { background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 9px 18px; font-size: 14px; font-weight: 500; }
+.btn:hover { border-color: var(--ink-3); }
+.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.seg .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn[disabled] { opacity: .45; cursor: default; }
+.reveal { animation: rise .6s ease both; }
+
+/* 確認問題 */
+.qz { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 22px; margin: 0 0 16px; }
+.qz .qn { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .14em; margin: 0 0 6px; }
+.qz .qt { font-weight: 500; margin: 0 0 14px; }
+.opts { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.opts.tf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.opt { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 11px 14px; text-align: left; line-height: 1.6; font-size: 15px; }
+.opt:hover:not([disabled]) { border-color: var(--mark); }
+.opt.big { text-align: center; font-size: 20px; padding: 12px; }
+.opt.right { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+.opt.wrong { border-color: var(--ng); background: var(--ng-soft); color: var(--ng); }
+.opt[disabled] { cursor: default; }
+.blank { display: inline-block; min-width: 5em; border-bottom: 2px solid var(--mark); text-align: center; color: var(--mark); font-weight: 700; margin: 0 4px; line-height: 1.5; }
+.seq { display: flex; flex-direction: column; gap: 6px; min-height: 48px; padding: 10px; border: 1px dashed var(--rule); border-radius: 10px; margin: 0 0 12px; font-size: 15px; }
+.seq .ph { color: var(--ink-3); font-size: 14px; }
+.seq .it { display: flex; gap: 10px; } .seq .it span:first-child { font-family: var(--f-mono); color: var(--mark); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+.err { color: var(--ng); font-size: 13px; min-height: 1.4em; margin: 8px 0 0; }
+.fb { margin-top: 14px; padding: 14px 16px; border-radius: 10px; font-size: 15px; line-height: 1.8; }
+.fb.ok { background: var(--ok-soft); } .fb.ng { background: var(--ng-soft); }
+.fb strong { display: block; margin-bottom: 2px; }
+.fb.ok strong { color: var(--ok); } .fb.ng strong { color: var(--ng); }
+textarea { width: 100%; min-height: 96px; resize: vertical; font: inherit; font-size: 15px; line-height: 1.8; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; }
+.model { margin-top: 14px; padding: 16px; border-left: 3px solid var(--mark); background: var(--mark-soft); font-size: 15px; }
+.model .tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: .18em; color: var(--mark); display: block; margin-bottom: 4px; }
+.score { font-size: 14px; color: var(--ink-2); margin: 6px 0 0; }
+
+/* インタラクティブ図 */
+.gate-fig .flow circle { opacity: 0; animation: flow 2.4s linear infinite; }
+.gate-fig.on .flow circle { opacity: 1; }
+.gate-fig .src-e { transition: opacity .3s; }
+.gate-fig .gate { fill: var(--card); stroke: var(--ink-3); transition: fill .3s; }
+.gate-fig.on .gate { fill: var(--ink); stroke: var(--ink); }
+.gate-fig .ch { fill: var(--silicon-soft); transition: fill .3s; }
+.gate-fig.on .ch { fill: var(--electron-soft); }
+.gate-fig .volt, .gate-fig.on .closed { opacity: 0; } .gate-fig.on .volt { opacity: 1; }
+.gate-fig .gl { fill: var(--ink-2); font: 700 14px var(--f-body); } .gate-fig.on .gl { fill: var(--paper); }
+.gstate { font-weight: 700; }
+.bits { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+.bit { border: 1px solid var(--rule); background: var(--paper); border-radius: 8px; padding: 10px 0 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.bit .v { font-family: var(--f-mono); font-size: 20px; font-weight: 500; color: var(--ink-3); }
+.bit .p { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); }
+.bit.on { background: var(--mark); border-color: var(--mark); } .bit.on .v, .bit.on .p { color: var(--card); }
+.bitout { display: flex; flex-wrap: wrap; gap: 4px 24px; align-items: baseline; margin-top: 14px; font-size: 15px; color: var(--ink-2); }
+.bitout b { font-family: var(--f-display); font-size: 34px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.proc { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.proc .st { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 10px; min-width: 0; }
+.proc svg { min-width: 0; width: 100%; height: 56px; margin-bottom: 6px; }
+.proc .sn { font-family: var(--f-mono); font-size: 11px; color: var(--mark); }
+.proc .sh { font-weight: 700; font-size: 14px; line-height: 1.5; margin: 2px 0 4px; }
+.proc .sd { font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
+
+/* シミュレータ・モジュール共通部品 */
+.frame.sim svg { min-width: 0; }
+.sim-ctrl { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px 14px; align-items: center; margin-top: 14px; font-size: 14px; }
+.sim-ctrl label { color: var(--ink-2); }
+.sim-ctrl output { font-family: var(--f-mono); font-variant-numeric: tabular-nums; min-width: 5.5em; text-align: right; color: var(--ink); }
+input[type=range] { width: 100%; accent-color: var(--mark); }
+.sim-read { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
+.sim-read b { font-family: var(--f-display); font-size: 24px; color: var(--ink); font-variant-numeric: tabular-nums; margin: 0 2px; }
+.sim-note { font-size: 14px; color: var(--ink-2); margin: 10px 0 0; min-height: 1.8em; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+canvas.sim-cv { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--paper); }
+.recall { border: 1px dashed var(--mark); border-radius: 14px; padding: 18px 20px; margin: 28px 0; }
+.recall .tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: .16em; color: var(--mark); margin: 0 0 10px; }
+.recall-in { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: 16px; align-items: center; margin-bottom: 12px; }
+.recall-in p { margin: 0; font-size: 15px; }
+.mini svg { min-width: 0; width: 100%; height: auto; display: block; }
+.chip-btn { background: transparent; color: var(--cine-ink); cursor: pointer; font-size: 13px; } .chip-btn:hover { border-color: var(--glow); }
+.mod .st.ok { color: var(--ok); }
+@media (max-width: 560px) { .recall-in { grid-template-columns: minmax(0, 1fr); } .sim-ctrl { grid-template-columns: minmax(0, 1fr) auto; } .sim-ctrl input { grid-column: 1 / -1; grid-row: 2; } }
+
+/* 余韻 */
+.after .in { padding-block: 56px; }
+.after .sum { font-size: 15px; color: var(--cine-dim); margin: 0 0 6px; }
+.after .sumt { font-size: 17px; margin: 0 0 30px; max-width: 34em; }
+.after .nextq { font-family: var(--f-display); font-weight: 700; font-size: clamp(22px, 4vw, 32px); line-height: 1.5; margin: 0 0 26px; text-wrap: balance; }
+.deeper { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; font-size: 13px; color: var(--cine-dim); align-items: center; }
+.chip { border: 1px solid var(--cine-line); border-radius: 999px; padding: 4px 12px; }
+.sources { font-size: 12.5px; color: var(--ink-3); padding-block: 28px 8px; line-height: 1.8; }
+.sources h3 { font-family: var(--f-mono); font-size: 11px; letter-spacing: .2em; font-weight: 500; margin: 0 0 6px; }
+.sources ul { margin: 0; padding-left: 1.2em; }
+
+/* 地図 */
+.mods { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mod { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; min-width: 0; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+.mod.main { grid-column: 1 / -1; border-color: var(--ink); }
+.mod .code { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .14em; }
+.mod .nm { font-family: var(--f-display); font-weight: 700; font-size: 20px; line-height: 1.4; }
+.mod .ds { font-size: 13.5px; color: var(--ink-2); line-height: 1.7; }
+.mod .st { font-size: 12px; margin-top: 6px; color: var(--ink-3); }
+.mod.main .st { color: var(--ok); }
+.mod.soon { background: transparent; border-style: dashed; }
+.pbar { display: flex; gap: 4px; margin-top: 10px; } .pbar i { flex: 1; height: 4px; border-radius: 2px; background: var(--rule); } .pbar i.on { background: var(--ok); }
+.req { font-size: 12px; color: var(--ink-3); }
+.recap { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.recap li button { width: 100%; text-align: left; background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: baseline; }
+.recap .k { font-family: var(--f-mono); font-size: 12px; color: var(--mark); }
+.foot { font-size: 12.5px; color: var(--ink-3); padding-block: 36px; border-top: 1px solid var(--rule); margin-top: 40px; }
+.foot .row { margin-top: 10px; }
+
+.build.play { animation: rise .7s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes flow { from { transform: translateX(0); } to { transform: translateX(330px); } }
+@media (prefers-reduced-motion: reduce) {
+  .build.play, .reveal { animation: none; }
+  .gate-fig .flow circle { animation: none; }
+  .gate-fig .flow circle:nth-child(2) { transform: translateX(110px); } .gate-fig .flow circle:nth-child(3) { transform: translateX(220px); }
+}
+@media (max-width: 720px) {
+  .zoom { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .zf:nth-child(3)::before { display: none; }
+  .proc { grid-template-columns: minmax(0, 1fr); }
+  .proc .st { display: grid; grid-template-columns: 72px minmax(0, 1fr); column-gap: 12px; align-items: start; }
+  .proc .st svg { grid-row: span 3; height: 48px; margin: 0; }
+  .fig .scroll-hint { display: block; }
+  .mods { grid-template-columns: minmax(0, 1fr); }
+  .dot { width: 26px; }
+}
+@media (max-width: 480px) { .predict { grid-template-columns: minmax(0, 1fr); } .dots { gap: 4px; } .dot { width: 24px; } .bits { gap: 4px; } .bit .v { font-size: 17px; } }
+</style>
+
+<div class="topbar gutter"><div class="in col-wide">
+  <button class="brand" data-act="go" data-to="map" aria-label="地図に戻る">半導体ドリル</button>
+  <nav class="dots" id="dots" aria-label="ステップ"></nav>
+</div></div>
+<div id="app"></div>
+
+<script>
+/* ===== 図版 ===== */
+const FIG = {
+  zoom() {
+    const frame = (inner, name, size) => `<div class="zf"><svg viewBox="0 0 160 160" role="img" aria-label="${name}">${inner}</svg><div class="zl"><span>${name}</span><span class="mono">視野 ${size}</span></div></div>`;
+    const phone = `<rect x="48" y="10" width="64" height="140" rx="12" class="z-line"/><rect x="55" y="24" width="50" height="110" rx="4" class="z-fill"/><rect x="72" y="70" width="16" height="16" class="z-hi"/>`;
+    let chip = `<rect x="18" y="18" width="124" height="124" class="z-line"/>`;
+    [[26,26,52,40],[82,26,52,40],[26,70,34,64],[64,70,32,30],[100,70,34,30],[64,104,70,30]].forEach(b => chip += `<rect x="${b[0]}" y="${b[1]}" width="${b[2]}" height="${b[3]}" class="z-fill"/>`);
+    chip += `<rect x="112" y="110" width="12" height="12" class="z-hi"/>`;
+    let tr = '';
+    for (let i = 0; i < 5; i++) tr += `<rect x="12" y="${28 + i * 24}" width="136" height="9" class="z-fin"/>`;
+    for (let j = 0; j < 9; j++) tr += `<rect x="${18 + j * 15}" y="14" width="5" height="132" class="z-gate"/>`;
+    tr += `<rect x="74" y="72" width="22" height="22" class="z-hi"/>`;
+    let at = '';
+    for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) {
+      const x = 20 + c * 20, y = 20 + r * 20;
+      if (c < 6) at += `<line x1="${x}" y1="${y}" x2="${x + 20}" y2="${y}" class="z-bond"/>`;
+      if (r < 6) at += `<line x1="${x}" y1="${y}" x2="${x}" y2="${y + 20}" class="z-bond"/>`;
+    }
+    for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) at += `<circle cx="${20 + c * 20}" cy="${20 + r * 20}" r="5" class="z-atom"/>`;
+    return `<div class="zoom">${frame(phone, 'スマホ', '約15cm')}${frame(chip, 'チップ', '約1.5cm')}${frame(tr, 'トランジスタの列', '約0.5µm')}${frame(at, 'シリコン原子', '約3nm')}</div>`;
+  },
+
+  step() {
+    const lowY = 214, h = 32;
+    const panel = (x, name, sub, gap, ups, jump, note) => {
+      const upY = lowY - gap - h, cx0 = x + 36;
+      let s = `<text x="${x + 110}" y="20" class="t-h" text-anchor="middle">${name}</text><text x="${x + 110}" y="40" class="t-s" text-anchor="middle">${sub}</text>`;
+      s += `<rect x="${x + 20}" y="${upY}" width="180" height="${h}" rx="3" class="b-up"/><rect x="${x + 20}" y="${lowY}" width="180" height="${h}" rx="3" class="b-low"/>`;
+      for (let i = 0; i < 9; i++) s += `<circle cx="${cx0 + i * 18.5}" cy="${lowY + h / 2}" r="6" class="${jump && i === 3 ? 'e-empty' : 'e'}"/>`;
+      ups.forEach(px => s += `<circle cx="${x + px}" cy="${upY + h / 2}" r="6" class="e"/>`);
+      if (jump) {
+        const sx = cx0 + 3 * 18.5;
+        s += `<path d="M ${sx} ${lowY - 4} C ${sx - 6} ${lowY - 34}, ${x + 112} ${upY + h + 26}, ${x + 120} ${upY + h + 6}" class="ln-e" stroke-dasharray="4 3"/><path d="M ${x + 114} ${upY + h + 10} L ${x + 120} ${upY + h + 3} L ${x + 125} ${upY + h + 11}" class="ln-e"/>`;
+        s += `<text x="${x + 134}" y="${(lowY + upY + h) / 2 + 4}" class="t-e">後押しで登る</text>`;
+      }
+      if (note) s += `<text x="${x + 110}" y="${(lowY + upY + h) / 2 + 5}" class="t-s" text-anchor="middle">${note}</text>`;
+      return s;
+    };
+    return `<svg viewBox="0 0 720 290" role="img" aria-label="金属、半導体、絶縁体の段差の違い">
+      ${panel(0, '金属（銅など）', '段差がない', 4, [44, 104, 160], false, '')}
+      ${panel(250, '半導体（シリコン）', '低い段差', 54, [120], true, '')}
+      ${panel(500, '絶縁体（ゴム・ガラス）', '崖のような段差', 122, [], false, '高すぎて登れない')}
+      <rect x="20" y="270" width="12" height="10" class="b-up"/><text x="38" y="280" class="t-s">上の階：電子が自由に動ける</text>
+      <rect x="250" y="270" width="12" height="10" class="b-low"/><text x="268" y="280" class="t-s">下の階：電子が原子に縛られている</text>
+    </svg>`;
+  },
+
+  scale() {
+    const X = e => 40 + (e + 8) * 25;
+    let t = '';
+    for (let e = -8; e <= 16; e += 4) t += `<line x1="${X(e)}" y1="104" x2="${X(e)}" y2="116" class="ln"/>`;
+    return `<svg viewBox="0 0 680 210" role="img" aria-label="電気の通しにくさのものさし">
+      <line x1="40" y1="110" x2="640" y2="110" class="ln" stroke-width="1.6"/>${t}
+      <text x="40" y="138" class="t-s">← 通しやすい</text><text x="640" y="138" class="t-s" text-anchor="end">通しにくい →</text>
+      <text x="340" y="138" class="t-m" text-anchor="middle">目盛1つで1万倍</text>
+      <circle cx="${X(-7.77)}" cy="110" r="7" class="f-ink"/><text x="${X(-7.77) - 4}" y="84" class="t-h">銅</text>
+      <circle cx="${X(3.36)}" cy="110" r="7" class="f-g"/><text x="${X(3.36)}" y="64" class="t-h" text-anchor="middle">純粋なシリコン</text><line x1="${X(3.36)}" y1="70" x2="${X(3.36)}" y2="100" class="ln"/>
+      <rect x="${X(10)}" y="102" width="${X(14) - X(10)}" height="16" rx="8" class="f-si"/><text x="${(X(10) + X(14)) / 2}" y="84" class="t-h" text-anchor="middle">ガラス</text>
+      <rect x="${X(-5)}" y="160" width="${X(3) - X(-5)}" height="12" rx="6" class="f-k"/>
+      <path d="M ${X(3.36)} 118 L ${X(3)} 156" class="ln-k" stroke-dasharray="3 3"/>
+      <text x="${(X(-5) + X(3)) / 2}" y="196" class="t-k" text-anchor="middle">混ぜ物しだいで、ここまで動かせる</text>
+    </svg>`;
+  },
+
+  gate() {
+    let src = '', flow = '';
+    for (let i = 0; i < 6; i++) src += `<circle cx="${60 + (i % 3) * 30}" cy="${128 + Math.floor(i / 3) * 26}" r="7" class="e src-e"/>`;
+    for (let i = 0; i < 3; i++) flow += `<circle cx="160" cy="146" r="7" class="e" style="animation-delay:${-i * 0.8}s"/>`;
+    return `<svg viewBox="0 0 640 230" role="img" aria-label="トランジスタの模式図">
+      <rect x="40" y="108" width="110" height="76" rx="6" class="f-es"/><text x="95" y="210" class="t-s" text-anchor="middle">入口</text>
+      <rect x="490" y="108" width="110" height="76" rx="6" class="f-es"/><text x="545" y="210" class="t-s" text-anchor="middle">出口</text>
+      <rect x="150" y="130" width="340" height="32" class="ch"/>
+      <text x="320" y="152" class="t-s closed" text-anchor="middle">通り道は閉じている</text>
+      <rect x="190" y="112" width="260" height="6" class="f-g"/>
+      <rect x="190" y="52" width="260" height="54" rx="6" class="gate"/>
+      <text x="320" y="85" class="gl" text-anchor="middle">門（ゲート）</text>
+      <text x="320" y="38" class="t-k volt" text-anchor="middle">＋ 小さな電圧</text>
+      ${src}<g class="flow">${flow}</g>
+    </svg>`;
+  },
+
+  chain() {
+    const tr = (x, label) => `<rect x="${x}" y="92" width="140" height="22" rx="4" class="f-si"/><rect x="${x + 30}" y="62" width="80" height="20" rx="4" class="f-es"/><text x="${x + 70}" y="76" class="t-m" text-anchor="middle">門</text><text x="${x + 70}" y="136" class="t-s" text-anchor="middle">${label}</text>`;
+    const arc = x => `<path d="M ${x} 103 C ${x + 40} 103, ${x + 60} 40, ${x + 100} 50 L ${x + 100} 60" class="ln-e"/><path d="M ${x + 95} 54 L ${x + 100} 62 L ${x + 105} 54" class="ln-e"/>`;
+    return `<svg viewBox="0 0 640 150" role="img" aria-label="トランジスタの出力が次のトランジスタの門を押す">
+      <text x="20" y="30" class="t-k">最初の一押し</text><path d="M 70 38 L 90 60" class="ln-k"/><path d="M 82 58 L 91 62 L 90 52" class="ln-k"/>
+      ${tr(40, 'トランジスタ1')}${arc(180)}${tr(250, 'トランジスタ2')}${arc(390)}${tr(460, 'トランジスタ3')}
+      <text x="230" y="24" class="t-e" text-anchor="middle">出てきた電気が、次の門を押す</text>
+    </svg>`;
+  },
+
+  bits() {
+    let b = '';
+    for (let i = 0; i < 8; i++) b += `<button class="bit" data-act="bit" data-i="${i}" id="bit-${i}" aria-pressed="false"><span class="v">0</span><span class="p">${2 ** (7 - i)}</span></button>`;
+    return `<div class="bits">${b}</div><div class="bitout"><span>この並びが表す数　<b id="bitval">0</b></span><span>スイッチ8個のパターンは全部で <b style="font-size:20px">256</b> 通り</span></div>`;
+  },
+
+  dome() {
+    return `<svg viewBox="0 0 640 260" role="img" aria-label="チップを東京ドームの大きさに拡大したときのトランジスタの大きさ">
+      <rect x="54" y="122" width="14" height="14" class="f-g"/><text x="61" y="164" class="t-s" text-anchor="middle">チップ</text><text x="61" y="182" class="t-m" text-anchor="middle">約1cm角</text>
+      <path d="M 92 129 L 220 129" class="ln" stroke-dasharray="4 4"/><path d="M 212 123 L 221 129 L 212 135" class="ln"/>
+      <text x="156" y="116" class="t-h" text-anchor="middle">約2万倍</text>
+      <rect x="240" y="20" width="360" height="220" rx="90" class="f-card" stroke-width="1.5"/>
+      <text x="420" y="54" class="t-s" text-anchor="middle">東京ドーム（幅 約220m）</text>
+      <circle cx="420" cy="140" r="4" class="f-k"/><path d="M 425 136 L 470 106" class="ln-k"/>
+      <text x="474" y="104" class="t-k">トランジスタ1個</text><text x="474" y="122" class="t-s">＝ゴマ粒ほど（約1.6mm）</text>
+      <text x="420" y="214" class="t-m" text-anchor="middle">※点は見やすく大きく描いています</text>
+    </svg>`;
+  },
+
+  process() {
+    const ic = [
+      `<polygon points="14,46 26,24 44,20 54,34 48,48" class="f-si"/><polygon points="50,48 60,30 78,28 84,46" class="f-si"/>`,
+      `<rect x="30" y="12" width="36" height="38" class="f-si"/><ellipse cx="48" cy="12" rx="18" ry="5" class="f-card"/><ellipse cx="48" cy="50" rx="18" ry="5" class="f-si"/>`,
+      `<circle cx="48" cy="30" r="24" class="f-si"/><path d="M 32 18 H 64 M 28 30 H 68 M 32 42 H 64 M 36 10 V 50 M 48 6 V 54 M 60 10 V 50" class="ln" stroke-width=".8"/>`,
+      `<path d="M 38 2 L 44 22 M 48 2 L 48 22 M 58 2 L 52 22" class="ln-uv"/><rect x="26" y="22" width="44" height="4" class="f-g"/><ellipse cx="48" cy="36" rx="20" ry="4" class="f-card"/><rect x="22" y="50" width="52" height="5" class="f-si"/>`,
+      `<rect x="20" y="14" width="16" height="16" class="f-es"/><rect x="40" y="14" width="16" height="16" class="f-es"/><rect x="60" y="14" width="16" height="16" class="f-es"/><rect x="30" y="34" width="16" height="16" class="f-es"/><rect x="50" y="34" width="16" height="16" class="f-es"/>`
+    ];
+    const st = [
+      ['ケイ石から取り出す', '石を溶かしてシリコンを取り出し、極めて純粋にする'],
+      ['結晶の塊にする', '原子が規則正しく並んだ、大きな円柱の結晶に育てる'],
+      ['ウェハに切る', '直径30cmほどの薄い円盤に切り、鏡のように磨く。でこぼこだと、光で刷るときにピントが合わない'],
+      ['光で焼き付け、くり返す', '模様を光で写し、削る・混ぜる・重ねる。この1セットを数十層ぶんくり返す'],
+      ['切り分ける', '1枚のウェハから、数百個のチップが取れる']
+    ];
+    return `<div class="proc">${st.map((s, i) => `<div class="st"><svg viewBox="0 0 96 60" aria-hidden="true">${ic[i]}</svg><div class="sn">${i + 1}</div><div class="sh">${s[0]}</div><div class="sd">${s[1]}</div></div>`).join('')}</div>`;
+  },
+
+  osaka() {
+    return `<svg viewBox="0 0 640 220" role="img" aria-label="ウェハを東京から大阪の距離に拡大したときの層のずれ">
+      <line x1="90" y1="60" x2="580" y2="60" class="ln" stroke-width="2"/>
+      <circle cx="580" cy="60" r="6" class="f-g"/><text x="580" y="38" class="t-h" text-anchor="middle">東京</text>
+      <circle cx="90" cy="60" r="6" class="f-g"/><text x="90" y="38" class="t-h" text-anchor="middle">大阪</text>
+      <text x="335" y="48" class="t-s" text-anchor="middle">約400km</text>
+      <path d="M 96 66 L 150 112" class="ln"/>
+      <circle cx="170" cy="152" r="50" class="f-card" stroke-width="1.5"/>
+      <rect x="130" y="134" width="80" height="12" class="f-g"/><rect x="138" y="152" width="80" height="12" class="f-uv"/>
+      <path d="M 130 176 L 130 186 M 138 176 L 138 186" class="ln-k"/><text x="134" y="200" class="t-k" text-anchor="middle">ずれ</text>
+      <text x="246" y="146" class="t-h" style="font-size:22px">層のずれは約1.5mm</text>
+      <text x="246" y="172" class="t-s" style="font-size:14px">1円玉の厚み（1.5mm）ほど</text>
+    </svg>`;
+  },
+
+  share() {
+    const W = 470, x0 = 110;
+    return `<svg viewBox="0 0 640 236" role="img" aria-label="日本の半導体世界シェアと、最先端ロジック半導体の生産地">
+      <text x="0" y="18" class="t-h">日本の半導体の世界シェア（売上高）</text>
+      <text x="0" y="52" class="t-s">1988年</text><rect x="${x0}" y="36" width="${W * .503}" height="24" rx="3" class="f-ink"/><text x="${x0 + W * .503 + 8}" y="53" class="t-h">50.3%</text>
+      <text x="0" y="88" class="t-s">2019年</text><rect x="${x0}" y="72" width="${W * .1}" height="24" rx="3" class="f-ink"/><text x="${x0 + W * .1 + 8}" y="89" class="t-h">10.0%</text>
+      <line x1="${x0}" y1="30" x2="${x0}" y2="102" class="ln"/>
+      <text x="0" y="146" class="t-h">最先端（10nm未満）のロジック半導体の生産能力（2019年）</text>
+      <rect x="${x0}" y="160" width="${W * .92}" height="28" class="f-k"/><rect x="${x0 + W * .92}" y="160" width="${W * .08}" height="28" class="f-si"/>
+      <text x="0" y="179" class="t-s">地域別</text>
+      <text x="${x0}" y="212" class="t-k">台湾 92%</text><text x="${x0 + W}" y="212" class="t-s" text-anchor="end">韓国 8%</text>
+    </svg>`;
+  }
+};
+
+/* ===== 教材データ ===== */
+const STEPS = [
+{
+  id: 's1', no: 1, title: '電気を通す？通さない？',
+  headline: '銅でもゴムでもない「中途半端」な物質は、何の役に立つのか。',
+  predict: {
+    q: '電気をよく通す銅。まったく通さないゴム。その「中間」の物質があったら、どんな使い道があると思いますか？',
+    options: ['少しだけ電気を通す、細い電線', '電気を通したり止めたりを切り替える、スイッチ', '電気をためておく、電池'],
+    answer: 1,
+    right: 'そのとおり。中途半端だからこそ、どちらにも振れるのです。',
+    wrong: '答えは「スイッチ」。中途半端だからこそ、どちらにも振れるのです。'
+  },
+  explore: [
+    { t: 'p', h: '電気が流れるとは、物質の中を<b>電子</b>が動くことです。電子は、原子の中にあるマイナスの電気をもった小さな粒。中学の理科で習う「電流」の正体です。' },
+    { t: 'p', h: 'ただし、電子はどれでも自由に動けるわけではありません。原子に縛られている「下の階」と、自由に動き回れる「上の階」があり、上の階へ行くには<b>段差</b>を登らなければなりません。' },
+    { t: 'fig', svg: 'step', cap: '物質によって、段差の高さが違う。上の階に電子がいるほど、電気はよく流れる。' },
+    { t: 'p', h: '金属は、最初から上の階に電子がいます。だから、いつでも電気が流れる。ゴムやガラスは、段差が崖のように高い。電子は登れず、電気はほとんど流れません。' },
+    { t: 'p', h: 'そして半導体。段差は<b>ちょうどいい低さ</b>です。ふだんはあまり流れない。けれど、光を当てる、熱を加える、別の元素を混ぜる、電圧をかけるといった「後押し」をすると、電子が段差を登って流れ出します。' },
+    { t: 'h', h: '中途半端だから、外から切り替えられる' },
+    { t: 'p', h: '金属は流れっぱなし。ゴムは止まりっぱなし。どちらも、外から性質を変えることはほとんどできません。半導体は中間にいるからこそ、後押しの加減ひとつで「流れる」と「流れない」の<b>どちらにも振れる</b>。これが、半導体がスイッチになれる理由です。' },
+    { t: 'analogy', ttl: '段差', rows: [['下の階', '原子に縛られた電子'], ['上の階', '自由に動ける電子'], ['段差の高さ', '電子が動き出すのに必要なエネルギー'], ['後押し', '光・熱・混ぜ物・電圧']],
+      breaks: '本物の「階」は1枚の床ではなく、たくさんの電子が入れる帯のような広がりをもちます。また、実際のスイッチ（トランジスタ）では、電子一つひとつに段差を登らせるのではなく、混ぜ物で用意した電子を電圧で集めたり追い払ったりして切り替えます。詳しくはモジュールAで。' }
+  ],
+  discover: [
+    { t: 'p', h: '電気の通しにくさを1本のものさしに並べてみます。目盛1つで1万倍。それほど物質による差は大きいのです。' },
+    { t: 'fig', svg: 'scale', cap: '電気の通しにくさのものさし。純粋なシリコンは銅より約1000億倍通しにくい。けれど混ぜ物をすると、通しにくさを1億倍もの幅で変えられる。' },
+    { t: 'num', big: '1億', unit: '倍', b: 'シリコンの性質を変えられる幅', l: '金属もガラスも、ものさしの上の位置はほぼ決まっています。シリコンだけが、混ぜ物しだいで大きく動けます。' }
+  ],
+  quiz: [
+    { type: 'tf', q: '半導体は、銅よりも電気をよく通すから重宝されている。', answer: 1, ex: '半導体はむしろ銅よりずっと通しにくい物質です。価値は「通しやすさ」ではなく、「通す・通さないを切り替えられること」にあります。' },
+    { type: 'choice', q: '段差のたとえで、半導体にあたるのはどれ？', options: ['段差がない', 'ちょっと後押しすれば登れる低い段差', '崖のように高い段差', '下り坂'], answer: 1, ex: '段差がないのが金属、崖のように高いのが絶縁体です。半導体は、後押しで登れる「ちょうどいい低さ」の段差です。' },
+    { type: 'fill', before: '半導体の価値は、電気を通すことと止めることを、外から', after: 'られることにある。', options: ['切り替え', '増やせ', 'ため', '冷やせ'], answer: 0, ex: '「中途半端」だからこそ、外からの後押しで切り替えられる。これがサマリ全体の出発点です。' },
+    { type: 'order', q: '電気を通しやすい順に並べてください。', items: ['銅', '純粋なシリコン', 'ガラス'], ex: '銅がいちばん通しやすく、ガラスがいちばん通しにくい。純粋なシリコンはその間です。' }
+  ],
+  summary: '半導体の価値は、電気を「通す・通さない」を外から切り替えられること。',
+  next: 'では、「切り替える」とは具体的にどういうことか。指で押すスイッチと、何が違うのか。',
+  deeper: [['A', 'しくみ：段差の正体', 'a2']],
+  sources: ['電気抵抗率は代表値の概算（銅 約1.7×10⁻⁸ Ω·m、純粋なシリコン 約2.3×10³ Ω·m、ガラス 約10¹⁰〜10¹⁴ Ω·m、混ぜ物をしたシリコン 約10⁻⁵〜10³ Ω·m）。']
+},
+{
+  id: 's2', no: 2, title: 'スイッチになる',
+  headline: '指で押さないスイッチは、何で押すのか。',
+  predict: {
+    q: '部屋の照明のスイッチは、指で押します。では、半導体でできたスイッチは、何で「押す」のでしょう？',
+    options: ['小さなモーター', '電気', '磁石'],
+    answer: 1,
+    right: 'そのとおり。半導体のスイッチは、電気で電気を切り替えます。',
+    wrong: '答えは「電気」。半導体のスイッチは、電気で電気を切り替えます。'
+  },
+  explore: [
+    { t: 'p', h: '半導体でできたスイッチを<b>トランジスタ</b>と呼びます。しくみはシンプルです。電気の通り道が1本あり、そのすぐ上に「門（ゲート）」がついています。' },
+    { t: 'p', h: '門に小さな電圧をかけると、通り道が開いて電気が流れる。電圧をやめると、閉じて止まる。下のボタンで試してみてください。' },
+    { t: 'gate' },
+    { t: 'analogy', ttl: '水道の蛇口', rows: [['ハンドル', '門（ゲート）'], ['指先の小さな力', '門にかける小さな電圧'], ['水道管を流れる水', '通り道を流れる電気']],
+      breaks: '蛇口はハンドルを回して弁を「動かし」ます。トランジスタには、動く部品が一つもありません。門の電圧が、通り道の電子を引き寄せたり追い払ったりするだけ。だからすり減らず、1秒間に何十億回でも切り替えられます。' },
+    { t: 'h', h: 'スイッチが、スイッチを押す' },
+    { t: 'p', h: 'ここが核心です。トランジスタを押すのは電気。そしてトランジスタから出てくるのも電気。つまり、あるトランジスタから出てきた電気で、<b>次のトランジスタの門を押せる</b>のです。' },
+    { t: 'fig', svg: 'chain', cap: '最初の一押しが、スイッチからスイッチへと伝わっていく。この連鎖を組み合わせると、計算ができる。' },
+    { t: 'p', h: '指で押すスイッチなら、誰かが押さない限り次は動きません。電気で押せるスイッチは、人の手を借りずに連鎖できる。これが、コンピュータが計算できる理由の出発点です。' },
+    { t: 'column', tag: '人物コラム', ttl: '真空管から、手のひらの石へ', ps: [
+      '1946年に完成したコンピュータ「ENIAC」は、スイッチに真空管という電球のような部品を使っていました。その数、約1万8000本。重さ約27トン。球が切れるたびに探して交換する必要がありました。',
+      '1947年12月、米国ベル研究所のバーディーンとブラッテンが、半導体で最初のトランジスタを動かします。ショックレーがそれを改良し、3人は1956年にノーベル物理学賞を受けました。小さく、熱くならず、切れない。スイッチの歴史が変わった瞬間です。'
+    ] }
+  ],
+  discover: [
+    { t: 'num', big: '38億', unit: '回', b: '1秒間に刻むリズム', l: '最新クラスのスマホの頭脳（A17 Pro）は、1秒間に最大約38億回のリズムでスイッチを切り替えながら計算しています。動く部品がないからこそできる速さです。' }
+  ],
+  quiz: [
+    { type: 'tf', q: 'トランジスタの中には、スイッチを切り替えるための小さな可動部品が入っている。', answer: 1, ex: '動く部品はありません。門の電圧が電子を集めたり追い払ったりするだけなので、すり減らず、とても速く切り替えられます。' },
+    { type: 'choice', q: '蛇口のたとえで「ハンドル」にあたるのは？', options: ['門（ゲート）', '流れる電気', '入口', '出口'], answer: 0, ex: 'ハンドルを少し回すと大量の水が流れるように、門に小さな電圧をかけると、通り道に電気が流れます。' },
+    { type: 'choice', q: '「スイッチを押すのも電気」であることの、いちばん大きな意味は？', options: ['電気代が安くなる', 'スイッチが次のスイッチを押せる（連鎖できる）', 'スイッチが光る', '熱くならない'], answer: 1, ex: '出てきた電気で次の門を押せるから、人の手を借りずに連鎖できます。これが計算のしくみの土台です。' },
+    { type: 'order', q: '古い順に並べてください。', items: ['真空管のコンピュータ（ENIAC）が完成', 'ベル研究所でトランジスタが誕生', '発明者3人がノーベル物理学賞', 'スマホのチップに数百億個のトランジスタ'], ex: '1946年 ENIAC → 1947年 トランジスタ → 1956年 ノーベル賞 → 現在。わずか80年ほどの出来事です。' }
+  ],
+  summary: 'トランジスタは、電気で電気を切り替えるスイッチ。スイッチがスイッチを押せるから、連鎖して計算できる。',
+  next: 'では、あなたのスマホには、そのスイッチがいくつ入っているのか。',
+  deeper: [['A', 'しくみ：トランジスタ', 'a5'], ['B', '計算のしくみ']],
+  sources: ['ENIAC：真空管 約17,468本、重さ 約27トン（ペンシルベニア大学ほか）。', 'トランジスタ：1947年 米国ベル研究所。1956年 ノーベル物理学賞（ショックレー、バーディーン、ブラッテン）。', 'A17 Pro の最大クロック 約3.78GHz（Apple、2023年）。']
+},
+{
+  id: 's3', no: 3, title: 'スイッチが数百億個',
+  headline: 'あなたのポケットの中に、スイッチはいくつあるか。',
+  predict: {
+    q: '最新のスマホのチップ1枚に入っているトランジスタ（スイッチ）の数は、どれくらいだと思いますか？',
+    options: ['約1万個', '約1億個', '約200億個', '約10兆個'],
+    answer: 2,
+    right: '正解。想像を超える数です。',
+    wrong: '答えは約200億個。地球の人口の2倍以上です。'
+  },
+  explore: [
+    { t: 'p', h: 'スイッチ1つで表せるのは、「オン」か「オフ」の2通りだけ。オンを1、オフを0と書くことにします。' },
+    { t: 'p', h: 'では、スイッチを並べたらどうなるか。2つなら4通り、3つなら8通り。1つ増えるごとに、表せるパターンは2倍になります。8つのスイッチを押して確かめてみてください。' },
+    { t: 'bits' },
+    { t: 'p', h: 'スイッチ8個で0から255まで。30個並べれば約10億通り。<b>数は、スイッチの並びで表せる</b>のです。そして文字も、写真の色も、音も、数に置き換えれば表せます。' },
+    { t: 'p', h: 'さらに、S2で見たとおり、スイッチはスイッチを押せます。うまくつなぐと「足し算」ができ、足し算を積み重ねれば、あらゆる計算ができる。写真1枚を加工するにも、膨大な数のスイッチが必要です。だから数が多いほど、速く、たくさんの計算ができるのです。' }
+  ],
+  discover: [
+    { t: 'num', big: '190億', unit: '個', b: 'スマホのチップ1枚に入るトランジスタ', l: 'AppleのA17 Pro（2023年）の場合。地球の人口（約80億人）の2倍以上のスイッチが、指先ほどのチップに収まっています。' },
+    { t: 'p', h: 'どれほど小さいのか。チップ（約1cm角）を、東京ドームの大きさまで拡大してみます。' },
+    { t: 'fig', svg: 'dome', cap: 'チップを約2万倍に拡大して東京ドームの大きさにしても、トランジスタ1個はゴマ粒ほど。そのゴマ粒が、ドームいっぱいに190億個敷き詰められている。' }
+  ],
+  quiz: [
+    { type: 'choice', q: 'スイッチ3つで表せるパターンは何通り？', options: ['3通り', '6通り', '8通り', '9通り'], answer: 2, ex: '1つ増えるごとに2倍。2 → 4 → 8 です。' },
+    { type: 'fill', before: 'スイッチ1つが表せるのは、オンとオフ、つまり', after: 'と0の2通り。', options: ['1', '2', '10', '100'], answer: 0, ex: 'オンを1、オフを0とします。この0と1の並びで、数も文字も画像も表します。' },
+    { type: 'tf', q: 'チップの中のスイッチの数が多いほど、一度にたくさんの計算ができる。', answer: 0, ex: 'おおむね正しい。ただし、設計の工夫や、1秒間に切り替える回数も性能を左右します。' },
+    { type: 'choice', q: '最新スマホのチップのトランジスタ数に、いちばん近いのは？', options: ['東京都の人口くらい', '日本の人口くらい', '地球の人口と同じくらい', '地球の人口の2倍以上'], answer: 3, ex: '約190億個。地球の人口（約80億人）の2倍以上です。' }
+  ],
+  summary: '数百億個のスイッチの組み合わせで、スマホはあらゆる計算をしている。',
+  next: 'では、ゴマ粒どころではない小ささのものを、人間はどうやって作っているのか。',
+  deeper: [['B', '計算のしくみ：0と1から足し算へ']],
+  sources: ['A17 Pro のトランジスタ数 190億個（Apple、2023年9月発表）。チップの面積は約104〜114mm²（分解調査により異なる）。', 'ゴマ粒の計算：約110mm² ÷ 190億個 ≒ 1個あたり約76nm四方。チップ約1cmを東京ドームの幅（建築面積 約4万7000m²から、およそ220m）に拡大すると約2万倍。76nm × 2万 ≒ 1.6mm。']
+},
+{
+  id: 's4', no: 4, title: 'ありふれた石から',
+  headline: '人類で最も精密な工業製品は、何からできているか。',
+  predict: {
+    q: '半導体チップの主な材料は、何だと思いますか？',
+    options: ['金', '石油', '石や砂', '希少なレアメタル'],
+    answer: 2,
+    right: '正解。材料は、足もとにありふれています。',
+    wrong: '答えは「石や砂」。材料は、足もとにありふれています。'
+  },
+  explore: [
+    { t: 'p', h: '半導体の主役シリコン（ケイ素）は、地球の地殻で<b>酸素に次いで2番目に多い元素</b>です。石や砂の主成分「二酸化ケイ素」に含まれていて、地殻の重さの4分の1以上を占めます。' },
+    { t: 'p', h: '材料はありふれている。では、何が難しいのか。答えは<b>純度</b>と<b>精度</b>です。' },
+    { t: 'fig', html: 'process', cap: '石からチップができるまで。完成までには数か月かかり、工程は1000を超えることもある。' },
+    { t: 'p', h: 'いちばんの山場は「光で焼き付ける」工程です。回路の模様を描いた原版に光を通し、レンズで縮めてウェハに写します。原版は、完成品の4倍の大きさで描いておきます。<b>大きく描いて小さく刷る</b>ほうが、小さく描くよりずっと正確にできるからです。' },
+    { t: 'analogy', ttl: '縮小コピーで刷る版画', rows: [['版画の原版', '回路の模様を描いた原版（マスク）'], ['インク', '光'], ['縮小コピー', 'レンズで模様を4分の1に縮める'], ['多色刷り', '何十もの層を重ねていく']],
+      breaks: '版画は刷れば終わりですが、半導体は焼き付けたあとに削ったり、混ぜ物をしたりして、それを何十層もくり返します。そして多色刷りの版がずれると絵がにじむように、層がずれれば回路がつながりません。そのずれの許容範囲が、ナノメートルの世界です。' },
+    { t: 'column', tag: 'ほんとうはもう少し複雑', ttl: '「純度」の話は、まだ続きがある', ps: [
+      '原料のシリコンには、99.999999999％（9が11個）という純度が求められます。なぜそこまで必要なのか。その理由は、半導体の中で電子がどう動くかを知ると見えてきます。モジュールAとCで掘り下げます。'
+    ] }
+  ],
+  discover: [
+    { t: 'p', h: '層と層を重ねるときのずれは、最新の装置でわずか約1nm（ナノメートル）。直径30cmのウェハを、東京〜大阪の長さまで拡大してみます。' },
+    { t: 'fig', svg: 'osaka', cap: '東京から大阪まで、2本の線をぴったり重ねて引く。そのずれが1円玉の厚みほど。これが、毎日の生産で求められる精度。' },
+    { t: 'num', big: '1', unit: 'nm', b: '層の重ね合わせのずれ', l: '1nmは1mmの100万分の1。髪の毛の太さの、およそ8万分の1です。' }
+  ],
+  quiz: [
+    { type: 'tf', q: 'シリコンは地球上でとても珍しい元素だから、半導体は高価になる。', answer: 1, ex: 'シリコンは地殻で2番目に多い、ありふれた元素です。価値を生んでいるのは材料ではなく、純度と精度を極める技術です。' },
+    { type: 'order', q: '製造の流れの順に並べてください。', items: ['ケイ石から純粋なシリコンを取り出す', '結晶の塊を薄い円盤（ウェハ）に切る', '光で回路の模様を焼き付ける（数十層ぶんくり返す）', '切り分けてチップにする'], ex: '石 → 結晶 → ウェハ → 焼き付け → 切り分け。焼き付けから重ねるまでを1セットに、数十層ぶんくり返します。' },
+    { type: 'choice', q: '版画のたとえで「多色刷りの版がずれないこと」にあたるのは？', options: ['層と層をぴったり重ねること', '原料を純粋にすること', 'ウェハを丸く切ること', 'チップを冷やすこと'], answer: 0, ex: '版がずれると絵がにじむように、層がずれると回路がつながりません。' },
+    { type: 'choice', q: 'ウェハを東京〜大阪の長さに拡大したとき、層のずれはどれくらい？', options: ['約1km', '約10m', '約1m', '約1.5mm（1円玉の厚みほど）'], answer: 3, ex: '約400kmに対して、ずれは約1.5mm。人類の工業製品の中でも、飛び抜けた精度です。' }
+  ],
+  summary: '材料はありふれた石。価値を生むのは、ナノメートルの精度で何十もの層を重ねる技術。',
+  next: 'では、これほど精密なものを作れる場所は、世界にどれくらいあるのか。',
+  deeper: [['C', 'つくりかた']],
+  sources: ['地殻のケイ素の割合 約28％（質量比）。', '重ね合わせ精度：ASML の EUV 露光装置 NXE:3600D で約1.1nm（ASML 発表資料）。400km × 1.1nm ÷ 300mm ≒ 1.5mm。', '1円硬貨の厚さ 1.5mm（造幣局）。髪の毛の太さは約0.08mmとして計算。']
+},
+{
+  id: 's5', no: 5, title: 'なぜニュースに出る？',
+  headline: 'なぜ国どうしが、小さなチップを取り合うのか。',
+  predict: {
+    q: '2021年ごろ、世界中で半導体が足りなくなりました。このとき、いちばん大きな打撃を受けた意外な業界は？',
+    options: ['自動車', '農業', '出版', '観光'],
+    answer: 0,
+    right: '正解。世界中の自動車工場で、生産が止まりました。',
+    wrong: '答えは「自動車」。世界中の自動車工場で、生産が止まりました。'
+  },
+  explore: [
+    { t: 'p', h: 'いまの車には、数百から1000個以上の半導体が使われています。エンジンやブレーキの制御から、カーナビ、窓の開け閉めまで。たった数百円の部品が1つ足りないだけで、数百万円の車が完成しないのです。' },
+    { t: 'p', h: '半導体は、あらゆる製品の<b>「部品の部品」</b>です。スマホ、家電、車、医療機器、発電所。電気で動くものはほぼすべて、半導体なしには作れません。' },
+    { t: 'analogy', ttl: '産業のコメ', rows: [['コメ', '半導体'], ['毎日の食事', 'あらゆる製品'], ['主食が尽きると', '製品が作れなくなる']],
+      breaks: '1980年代の日本で、半導体は「産業のコメ」と呼ばれました。ただしコメは多くの国で作れます。最先端の半導体を作れる場所は、世界でもごくわずか。たとえが崩れるこの点こそ、いまの問題の核心です。' },
+    { t: 'h', h: '作れる場所が、限られている' },
+    { t: 'p', h: 'S4で見たナノメートルの精度を、毎日、大量に実現できる工場は世界でも一握りです。最先端のチップの生産は、特定の地域に集中しています。' },
+    { t: 'fig', svg: 'share', cap: '日本は1988年に世界の半分を占めたが、2019年には約1割に。いっぽう最先端のロジック半導体（計算用のチップ）の生産能力は、9割以上が台湾に集中している。' },
+    { t: 'p', h: 'もし、その場所からの供給が止まったら。車も、スマホも、発電所も止まりかねない。だから各国は、自国に工場を呼び込もうと動いています。日本でも、熊本に台湾の半導体メーカーTSMCの工場が建ち、北海道では最先端のチップを国内で作る計画が進んでいます。' }
+  ],
+  discover: [
+    { t: 'num', big: '92', unit: '%', b: '最先端のロジック半導体の生産能力のうち、台湾が占める割合', l: '2019年の時点。世界の工業製品の中で、これほど一つの場所に集中しているものは多くありません。' }
+  ],
+  quiz: [
+    { type: 'choice', q: '1980年代の日本で、半導体は何と呼ばれた？', options: ['産業のコメ', '産業の塩', '電子の油', '工業のパン'], answer: 0, ex: 'あらゆる産業が毎日必要とする、という意味です。' },
+    { type: 'tf', q: '半導体が不足しても、影響を受けるのはパソコンやスマホだけだ。', answer: 1, ex: '2021年には自動車の生産が世界中で止まりました。電気で動くものはほぼすべて、半導体なしには作れません。' },
+    { type: 'fill', before: '最先端の半導体を作れる場所は世界でもごく', after: 'ため、各国が工場を取り合っている。', options: ['限られている', '多い', '新しい', '寒い'], answer: 0, ex: 'あらゆる製品に必要なのに、作れる場所は限られている。この組み合わせが、国の安全にかかわる問題にしています。' },
+    { type: 'explain', q: '「産業のコメ」というたとえは、いまの半導体にはどこが合っていて、どこが合っていないでしょう。あなたなら、いまの半導体を何と呼びますか？', model: '合っているのは「あらゆる産業が毎日必要とする」点。合っていないのは「どこでも作れる」点です。たとえば「産業の石油」と呼ぶなら、どの産業も必要とし、産地が偏っていて、国どうしの取り合いになる、という今の姿をよく表せます。' }
+  ],
+  summary: '半導体はあらゆる製品の「部品の部品」。なのに作れる場所は限られている。だから国の安全にかかわる。',
+  next: 'サマリはここまで。最後に、半導体とは何かを、自分の言葉で説明してみましょう。',
+  deeper: [['D', 'どこで使われてる？'], ['E', '社会と産業']],
+  sources: ['日本の半導体の世界シェア：経済産業省「半導体戦略（概略）」2021年6月（Omdia のデータ）。', '最先端ロジック半導体の生産能力：SIA・BCG「Strengthening the Global Semiconductor Supply Chain in an Uncertain Era」2021年（2019年のデータ）。', '車1台あたりの半導体の数は車種により大きく異なる。']
+}
+];
+
+const MODULES = [
+  { code: 'A', name: 'しくみ', ds: '電子、シリコンの結晶、n型とp型、ダイオード、トランジスタ' },
+  { code: 'B', name: '計算のしくみ', ds: '0と1、AND/OR、足し算ができるまで、メモリ', req: 'Aのあとに' },
+  { code: 'C', name: 'つくりかた', ds: '純度、ウェハ、光で焼き付ける、クリーンルーム' },
+  { code: 'D', name: 'どこで使われてる？', ds: 'CPU、メモリ、センサー、LED、太陽電池、EV' },
+  { code: 'E', name: '社会と産業', ds: '真空管からICへ、ムーアの法則、分業、日本の強み' }
+];
+
+/* ===== 状態 ===== */
+const KEY = 'semidrill.v1';
+const store = {
+  load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
+  save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+};
+let saved = store.load(); saved.done = saved.done || {};
+const S = { view: 'map', pred: {}, qa: {}, gate: false, bits: [0, 1, 0, 1, 1, 0, 1, 0], resetArmed: false };
+const app = document.getElementById('app');
+
+const COURSES = { summary: { code: 'summary', label: 'サマリ', steps: STEPS, after: 'end', figs: {}, sims: {} } };
+STEPS.forEach(s => { s.mod = 'summary'; s.fp = String(s.no); });
+function registerModule(m) {
+  if (!m || !m.code || !Array.isArray(m.steps)) return;
+  m.figs = m.figs || {}; m.sims = m.sims || {}; m.after = m.after || 'map';
+  m.label = m.label || `モジュール${m.code}　${m.name}`;
+  m.steps.forEach(s => { s.mod = m.code; s.fp = m.code + s.no; });
+  COURSES[m.code] = m;
+  if (m.css) { const el = document.createElement('style'); el.textContent = m.css; document.head.appendChild(el); }
+}
+const allSteps = () => Object.values(COURSES).flatMap(c => c.steps);
+const stepOf = id => allSteps().find(s => s.id === id);
+const FIGTYPES = ['fig', 'gate', 'bits', 'sim'];
+const figFn = (st, name) => COURSES[st.mod].figs[name] || FIG[name];
+const SIMCTX = {
+  reducedMotion: !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches),
+  color: name => getComputedStyle(document.documentElement).getPropertyValue('--' + name).trim()
+};
+let cleanups = [];
+function mountSims(root) {
+  root.querySelectorAll('[data-sim]:not([data-mounted])').forEach(el => {
+    el.dataset.mounted = '1';
+    const [mod, id] = el.dataset.sim.split(':'), sim = COURSES[mod] && COURSES[mod].sims[id];
+    if (!sim || !sim.mount) return;
+    try { const c = sim.mount(el, SIMCTX); if (typeof c === 'function') cleanups.push(c); } catch (e) { console.error(e); el.insertAdjacentHTML('beforeend', '<p class="sim-note" style="color:var(--ng)">この図を読み込めませんでした。</p>'); }
+  });
+}
+function runCleanups() { cleanups.forEach(c => { try { c(); } catch (e) {} }); cleanups = []; }
+const qaOf = (sid, qi) => { S.qa[sid] = S.qa[sid] || {}; return S.qa[sid][qi] = S.qa[sid][qi] || {}; };
+const shuffled = (arr, seed) => { const a = arr.map((v, i) => i); let x = seed; for (let i = a.length - 1; i > 0; i--) { x = (x * 9301 + 49297) % 233280; const j = Math.floor(x / 233280 * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } if (a.every((v, i) => v === i)) a.reverse(); return a; };
+
+/* ===== 部品 ===== */
+function block(b, st, figNo) {
+  switch (b.t) {
+    case 'p': return `<p class="prose build">${b.h}</p>`;
+    case 'h': return `<h3 class="h2 build">${b.h}</h3>`;
+    case 'fig': return `<figure class="fig build"><div class="frame">${b.svg ? '<p class="scroll-hint">← 図は横にスクロールできます →</p>' + figFn(st, b.svg)() : figFn(st, b.html)()}</div><figcaption><span class="fn">図${st.fp}-${figNo}</span>${b.cap}</figcaption></figure>`;
+    case 'sim': { const sim = COURSES[st.mod].sims[b.id]; if (!sim) return '';
+      return `<figure class="fig build"><div class="frame sim" data-sim="${st.mod}:${b.id}">${sim.html(SIMCTX)}</div><figcaption><span class="fn">図${st.fp}-${figNo}</span>${b.cap}</figcaption></figure>`; }
+    case 'recall': return `<aside class="recall build"><p class="tag">伏線 ─ ${b.from}の「${b.ttl}」、覚えていますか？</p><div class="recall-in"><div class="mini">${((b.figMod && COURSES[b.figMod] && COURSES[b.figMod].figs[b.fig]) || figFn(st, b.fig))()}</div><p>${b.h}</p></div>${b.to ? `<button class="btn" data-act="go" data-to="${b.to}">${b.from}を読み返す</button>` : ''}</aside>`;
+    case 'recap': return `<ol class="recap build">${b.ids.map(id => stepOf(id)).filter(Boolean).map(x => `<li><button data-act="go" data-to="${x.id}"><span class="k">${x.fp}</span><span>${x.summary}</span></button></li>`).join('')}</ol>`;
+    case 'gate': return `<figure class="fig build"><div class="frame"><p class="scroll-hint">← 図は横にスクロールできます →</p><div class="gate-fig ${S.gate ? 'on' : ''}" id="gatefig">${FIG.gate()}</div>
+      <div class="row" style="justify-content:space-between"><button class="btn primary" data-act="gate" id="gatebtn" aria-pressed="${S.gate}">${S.gate ? '電圧をやめる' : '門に電圧をかける'}</button><span class="gstate" id="gatestate" style="color:${S.gate ? 'var(--electron)' : 'var(--ink-3)'}">${S.gate ? '電気が流れている' : '電気は流れない'}</span></div></div>
+      <figcaption><span class="fn">図${st.fp}-${figNo}</span>トランジスタの模式図。門の小さな電圧が、入口から出口への大きな流れを開け閉めする。</figcaption></figure>`;
+    case 'bits': return `<figure class="fig build"><div class="frame">${FIG.bits()}</div><figcaption><span class="fn">図${st.fp}-${figNo}</span>スイッチを押すとオン（1）とオフ（0）が切り替わる。下の小さな数字は、その位置のスイッチがオンのときに足される数。</figcaption></figure>`;
+    case 'analogy': return `<div class="analogy build"><p class="tag">たとえるなら</p><p class="ttl">${b.ttl}</p>
+      <div class="map"><span class="hd">たとえ</span><span></span><span class="hd">本物</span>${b.rows.map(r => `<span>${r[0]}</span><span class="arrow">↔</span><span class="real">${r[1]}</span>`).join('')}</div>
+      <details class="breaks"><summary>このたとえが崩れるところ</summary><p>${b.breaks}</p></details></div>`;
+    case 'num': return `<div class="num build"><span class="big">${b.big}<small>${b.unit}</small></span><span class="lbl"><b>${b.b}</b>${b.l}</span></div>`;
+    case 'column': return `<aside class="column build"><p class="tag">${b.tag}</p><p class="ttl">${b.ttl}</p>${b.ps.map(p => `<p>${p}</p>`).join('')}</aside>`;
+  }
+  return '';
+}
+function blocks(list, st, counter) { return list.map(b => block(b, st, FIGTYPES.includes(b.t) ? ++counter.n : 0)).join(''); }
+
+function predictHTML(st) {
+  const p = st.predict, sel = S.pred[st.id];
+  const answered = sel !== undefined;
+  const opts = p.options.map((o, i) => {
+    let c = 'popt';
+    if (answered && i === p.answer) c += ' right';
+    else if (answered && i === sel) c += ' wrong';
+    return `<button class="${c}" data-act="predict" data-i="${i}" ${answered ? 'disabled' : ''}>${o}</button>`;
+  }).join('');
+  const fb = !answered ? '' : sel === 'skip' ? '答えは下の「発見」で。' : (sel === p.answer ? p.right : p.wrong);
+  return `<p class="ptag">① 問い ─ まずは直感で予想</p><p style="margin:0 0 14px;max-width:36em">${p.q}</p><div class="predict">${opts}</div><p class="pfb" aria-live="polite">${fb}</p>`;
+}
+
+function discoverHTML(st, counter) {
+  if (S.pred[st.id] === undefined) return `<div class="locked"><span>① の予想を選ぶと、答え合わせが始まります。</span><button class="btn" data-act="reveal">予想せずに答えを見る</button></div>`;
+  return `<div class="reveal">${blocks(st.discover, st, counter)}</div>`;
+}
+
+function quizHTML(st, qi) {
+  const q = st.quiz[qi], s = qaOf(st.id, qi), n = `Q${qi + 1}`;
+  const fb = s.done && q.type !== 'explain' ? `<div class="fb ${s.ok ? 'ok' : 'ng'}"><strong>${s.ok ? '正解' : 'おしい'}</strong>${q.ex}</div>` : '';
+  const optBtns = (labels, cls) => labels.map((o, i) => {
+    let c = 'opt' + (cls ? ' ' + cls : '');
+    if (s.done && i === q.answer) c += ' right'; else if (s.done && i === s.pick) c += ' wrong';
+    return `<button class="${c}" data-act="pick" data-s="${st.id}" data-q="${qi}" data-i="${i}" ${s.done ? 'disabled' : ''}>${o}</button>`;
+  }).join('');
+  let body = '';
+  if (q.type === 'tf') body = `<p class="qt">${q.q}</p><div class="opts tf">${optBtns(['○', '×'], 'big')}</div>`;
+  else if (q.type === 'choice') body = `<p class="qt">${q.q}</p><div class="opts">${optBtns(q.options)}</div>`;
+  else if (q.type === 'fill') body = `<p class="qt">${q.before}<span class="blank">${s.done ? q.options[q.answer] : '？'}</span>${q.after}</p><div class="opts">${optBtns(q.options)}</div>`;
+  else if (q.type === 'order') {
+    s.seq = s.seq || []; const order = shuffled(q.items, qi * 7 + st.no * 13);
+    const seq = s.seq.length ? s.seq.map((idx, k) => `<div class="it"><span>${k + 1}</span><span>${q.items[idx]}</span></div>`).join('') : '<span class="ph">下の項目を、1番目から順にタップしてください。</span>';
+    const chips = order.map(idx => `<button class="opt" data-act="ord" data-s="${st.id}" data-q="${qi}" data-i="${idx}" ${s.done || s.seq.includes(idx) ? 'disabled' : ''} ${s.seq.includes(idx) && !s.done ? 'style="opacity:.4"' : ''}>${q.items[idx]}</button>`).join('');
+    body = `<p class="qt">${q.q}</p><div class="seq">${seq}</div><div class="opts">${chips}</div>` + (s.done ? '' : `<div class="row"><button class="btn primary" data-act="ord-check" data-s="${st.id}" data-q="${qi}">答え合わせ</button><button class="btn" data-act="ord-reset" data-s="${st.id}" data-q="${qi}">やり直す</button></div><p class="err" id="err-${st.id}-${qi}"></p>`);
+    if (s.done && !s.ok) body += `<p class="score">正しい順：${q.items.join(' → ')}</p>`;
+  } else if (q.type === 'explain') body = explainBody(q, s, `${st.id}-${qi}`, `data-s="${st.id}" data-q="${qi}"`);
+  return `<div class="qz" id="qz-${st.id}-${qi}"><p class="qn">${n}${q.type === 'explain' ? '　説明してみよう' : ''}</p>${body}${fb}</div>`;
+}
+
+function explainBody(q, s, key, attrs) {
+  let h = `<p class="qt">${q.q}</p><textarea id="ex-${key}" placeholder="思いついたことを、短くてもいいので書いてみてください。" aria-label="あなたの答え">${s.text || ''}</textarea>`;
+  if (!s.shown) h += `<div class="row"><button class="btn primary" data-act="model" ${attrs}>考えたので、模範解答を見る</button></div>`;
+  else {
+    h += `<div class="model"><span class="tag">模範解答の例</span>${q.model}</div>`;
+    h += s.rate ? `<p class="score">自己採点：${s.rate === 'ok' ? '言えた' : 'まだあやしい（もう一度読み返してみましょう）'}</p>` : `<div class="row"><span class="score" style="margin:0">自己採点：</span><button class="btn" data-act="rate" data-v="ok" ${attrs}>言えた</button><button class="btn" data-act="rate" data-v="ng" ${attrs}>まだあやしい</button></div>`;
+  }
+  return h;
+}
+
+function scoreHTML(st) {
+  const tot = st.quiz.filter(q => q.type !== 'explain').length;
+  let done = 0, ok = 0;
+  st.quiz.forEach((q, i) => { const s = qaOf(st.id, i); if (q.type === 'explain') return; if (s.done) { done++; if (s.ok) ok++; } });
+  return done === tot ? `確認問題：${tot}問中 ${ok}問正解` : `確認問題：${done} / ${tot} 問 回答済み`;
+}
+
+/* ===== 画面 ===== */
+function viewMap() {
+  const done = STEPS.filter(s => saved.done[s.id]).length;
+  const nextStep = STEPS.find(s => !saved.done[s.id]);
+  const startTo = done === 0 ? 's1' : nextStep ? nextStep.id : 'end';
+  return `<section class="cine gutter"><div class="in col-wide">
+    <p class="eyebrow">中学の理科から始める ─ サマリ＋5つの側面</p>
+    <h1 class="headline" style="font-size:clamp(34px,7vw,64px)">半導体ドリル</h1>
+    <p class="lead">ポケットの中の小さなチップ。その奥には、原子が手をつなぐミクロの世界があります。予想して、確かめて、自分の言葉で説明できるところまで。</p>
+    <button class="cine-btn" data-act="go" data-to="${startTo}">${done === 0 ? 'サマリをはじめる' : done === STEPS.length ? 'まとめを開く' : '続きから'} →</button>
+    ${FIG.zoom()}
+    <p class="zoom-cap">スマホからシリコン原子まで、約5000万倍のズーム。トランジスタ1個が占める幅は、シリコン原子およそ300個分。</p>
+  </div></section>
+  <main class="gutter"><div class="col-wide">
+    <section class="sec"><p class="slabel">地図</p>
+      <div class="mods">
+        <button class="mod main" data-act="go" data-to="${startTo}">
+          <span class="code">0 ─ まずはここから</span><span class="nm">サマリ「半導体ってなに？」</span>
+          <span class="ds">中途半端な物質 → スイッチ → 数百億個 → 石から作る精密品 → なぜニュースになるのか。全5ステップ、1ステップ5分ほど。</span>
+          <span class="pbar">${STEPS.map(s => `<i class="${saved.done[s.id] ? 'on' : ''}"></i>`).join('')}</span>
+          <span class="st">${done} / ${STEPS.length} ステップ完了</span>
+        </button>
+        ${MODULES.map(modCard).join('')}
+      </div>
+    </section>
+    ${footHTML()}
+  </div></main>`;
+}
+
+function viewStep(st) {
+  const counter = { n: 0 }, C = COURSES[st.mod];
+  const L = Object.assign({ explore: '② 探求', discover: '③ 発見', quiz: '④ 確認', after: '⑤ 余韻' }, st.labels || {});
+  const idx = C.steps.indexOf(st), nextTo = idx < C.steps.length - 1 ? C.steps[idx + 1].id : C.after;
+  const nextLabel = nextTo === 'end' ? 'まとめへ' : nextTo === 'map' ? '地図に戻る' : '第' + (st.no + 1) + '章へ';
+  return `<section class="cine gutter"><div class="in col">
+    <p class="eyebrow">${C.label} ─ 第${st.no}章　${st.title}</p>
+    <h1 class="headline">${st.headline}</h1>
+    ${st.predict ? predictHTML(st) : `<p class="lead" style="margin:0">${st.lead || ''}</p>`}
+  </div></section>
+  <main class="gutter"><div class="col">
+    <section class="sec"><p class="slabel">${L.explore}</p>${blocks(st.explore, st, counter)}</section>
+    ${st.discover ? `<section class="sec" id="discover"><p class="slabel">${L.discover}</p>${discoverHTML(st, counter)}</section>` : ''}
+    <section class="sec"><p class="slabel">${L.quiz}</p>${st.quiz.map((q, i) => quizHTML(st, i)).join('')}<p class="score" id="score">${scoreHTML(st)}</p></section>
+  </div></main>
+  <section class="cine after gutter"><div class="in col">
+    <p class="ptag" style="margin-top:0">${L.after}</p>
+    <p class="sum">この章のまとめ</p><p class="sumt">${st.summary}</p>
+    <p class="nextq">${st.next}</p>
+    <button class="cine-btn" data-act="go" data-to="${nextTo}">${nextLabel} →</button>
+    ${deeperHTML(st.deeper)}
+  </div></section>
+  <div class="gutter"><div class="col sources"><h3>出典と計算</h3><ul>${st.sources.map(x => `<li>${x}</li>`).join('')}</ul></div></div>`;
+}
+
+function deeperHTML(list) {
+  if (!list || !list.length) return '';
+  return `<div class="deeper"><span>もっと知りたい人は</span>${list.map(d => {
+    const isS = d[0] === 'S', C = COURSES[isS ? 'summary' : d[0]], to = d[2] && stepOf(d[2]) ? d[2] : C ? C.steps[0].id : null, nm = isS ? 'サマリ' : 'モジュール' + d[0];
+    return to ? `<button class="chip chip-btn" data-act="go" data-to="${to}">${nm}　${d[1]} →</button>` : `<span class="chip">${nm}　${d[1]}（制作中）</span>`;
+  }).join('')}</div>`;
+}
+
+function modCard(m) {
+  const C = COURSES[m.code];
+  if (!C) return `<div class="mod soon"><span class="code">${m.code}</span><span class="nm">${m.name}</span><span class="ds">${m.ds}</span><span class="st">制作中${m.req ? '　・　' + m.req : ''}</span></div>`;
+  const d = C.steps.filter(x => saved.done[x.id]).length, nx = C.steps.find(x => !saved.done[x.id]) || C.steps[0];
+  return `<button class="mod" data-act="go" data-to="${nx.id}"><span class="code">${m.code}</span><span class="nm">${C.name || m.name}</span><span class="ds">${C.ds || m.ds}</span>
+    <span class="pbar">${C.steps.map(x => `<i class="${saved.done[x.id] ? 'on' : ''}"></i>`).join('')}</span><span class="st ok">${d} / ${C.steps.length} ステップ完了${m.req ? '　・　' + m.req : ''}</span></button>`;
+}
+
+const FINAL = { q: '半導体とは何か。30秒で友人に説明するつもりで書いてみてください。', model: '半導体は、電気を通したり止めたりを、外から切り替えられる物質です。シリコンで作ったスイッチ（トランジスタ）は電気で切り替わるので、スイッチがスイッチを押す連鎖で計算ができます。スマホのチップにはそれが約200億個入っていて、ありふれた石を材料に、ナノメートルの精度で作られます。作れる場所が限られているため、国どうしが取り合っています。' };
+
+function viewEnd() {
+  const s = qaOf('end', 0);
+  return `<section class="cine gutter"><div class="in col">
+    <p class="eyebrow">サマリ ─ エピローグ</p>
+    <h1 class="headline">半導体を、自分の言葉で。</h1>
+    <p class="lead" style="margin-bottom:0">5つの章で見てきたことを、ひとつの説明にまとめてみましょう。</p>
+  </div></section>
+  <main class="gutter"><div class="col">
+    <section class="sec"><p class="slabel">5つの章のまとめ</p>
+      <ol class="recap">${STEPS.map(st => `<li><button data-act="go" data-to="${st.id}"><span class="k">第${st.no}章</span><span>${st.summary}</span></button></li>`).join('')}</ol>
+    </section>
+    <section class="sec"><p class="slabel">説明してみよう</p>
+      <div class="qz" id="qz-end-0"><p class="qn">FINAL</p>${explainBody(FINAL, s, 'end-0', 'data-s="end" data-q="0"')}</div>
+    </section>
+    <section class="sec"><p class="slabel">次の旅へ</p>
+      <p class="prose">ここから先は、気になった側面を深掘りします。AとBだけは順番に、C・D・Eはどこから始めても大丈夫です。</p>
+      <div class="mods">${MODULES.map(modCard).join('')}</div>
+    </section>
+    ${footHTML()}
+  </div></main>`;
+}
+
+function footHTML() {
+  return `<footer class="foot">数字は2026年10月時点で確認した概算です。出典と計算は各章の最後にあります。進み具合はこのブラウザにだけ保存されます。
+    <div class="row"><button class="btn" data-act="reset" id="resetbtn">${S.resetArmed ? 'もう一度押すと、進み具合を消します' : '進み具合をリセット'}</button></div></footer>`;
+}
+
+function renderDots() {
+  const st = stepOf(S.view), mod = st ? st.mod : S.view === 'end' ? 'summary' : null, el = document.getElementById('dots');
+  if (!mod) { el.innerHTML = ''; return; }
+  const pre = mod === 'summary' ? 'S' : mod;
+  el.innerHTML = COURSES[mod].steps.map(x => `<button class="dot ${saved.done[x.id] ? 'done' : ''} ${S.view === x.id ? 'cur' : ''}" data-act="go" data-to="${x.id}" aria-label="第${x.no}章 ${x.title}">${pre}${x.no}</button>`).join('') +
+    (mod === 'summary' ? `<button class="dot ${S.view === 'end' ? 'cur' : ''}" data-act="go" data-to="end" aria-label="まとめ">終</button>` : '');
+}
+
+let io;
+function render() {
+  const st = stepOf(S.view);
+  runCleanups();
+  app.innerHTML = st ? viewStep(st) : S.view === 'end' ? viewEnd() : viewMap();
+  mountSims(app);
+  if (st && st.explore.some(b => b.t === 'bits')) paintBits();
+  renderDots();
+  observe();
+}
+function observe() {
+  if (io) io.disconnect();
+  if (!('IntersectionObserver' in window)) return;
+  io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('play'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+  app.querySelectorAll('.build').forEach(el => { if (el.getBoundingClientRect().top > innerHeight) io.observe(el); });
+}
+function go(to) {
+  S.view = (stepOf(to) || to === 'end') ? to : 'map';
+  S.resetArmed = false;
+  render(); window.scrollTo(0, 0);
+  try { history.replaceState(null, '', '#' + S.view); } catch (e) {}
+}
+function paintBits() {
+  let v = 0;
+  S.bits.forEach((b, i) => { v += b * 2 ** (7 - i); const el = document.getElementById('bit-' + i); if (el) { el.classList.toggle('on', !!b); el.querySelector('.v').textContent = b; el.setAttribute('aria-pressed', !!b); } });
+  const out = document.getElementById('bitval'); if (out) out.textContent = v;
+}
+function refreshQuiz(sid, qi) {
+  if (sid === 'end') { document.getElementById('qz-end-0').outerHTML = `<div class="qz" id="qz-end-0"><p class="qn">FINAL</p>${explainBody(FINAL, qaOf('end', 0), 'end-0', 'data-s="end" data-q="0"')}</div>`; return; }
+  const st = stepOf(sid);
+  document.getElementById(`qz-${sid}-${qi}`).outerHTML = quizHTML(st, qi);
+  document.getElementById('score').textContent = scoreHTML(st);
+  if (st.quiz.every((q, i) => qaOf(sid, i).done)) { saved.done[sid] = true; store.save(saved); renderDots(); }
+}
+
+app.addEventListener('input', e => {
+  const m = e.target.id && e.target.id.match(/^ex-(\w+)-(\d+)$/);
+  if (m) qaOf(m[1], +m[2]).text = e.target.value;
+});
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const act = t.dataset.act, sid = t.dataset.s, qi = +t.dataset.q;
+  const st = stepOf(S.view);
+  if (act === 'go') return go(t.dataset.to);
+  if (act === 'predict' || act === 'reveal') {
+    S.pred[st.id] = act === 'reveal' ? 'skip' : +t.dataset.i;
+    const cine = app.querySelector('.cine .in');
+    cine.innerHTML = cine.innerHTML.replace(/<p class="ptag">[\s\S]*$/, predictHTML(st));
+    const counter = { n: st.explore.filter(b => FIGTYPES.includes(b.t)).length };
+    const d = document.getElementById('discover'); d.innerHTML = `<p class="slabel">${(st.labels && st.labels.discover) || '③ 発見'}</p>${discoverHTML(st, counter)}`;
+    mountSims(d); observe();
+    if (act === 'reveal') d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  if (act === 'pick') { const s = qaOf(sid, qi); if (s.done) return; const q = stepOf(sid).quiz[qi]; s.pick = +t.dataset.i; s.ok = s.pick === q.answer; s.done = true; return refreshQuiz(sid, qi); }
+  if (act === 'ord') { const s = qaOf(sid, qi); s.seq = s.seq || []; if (!s.seq.includes(+t.dataset.i)) s.seq.push(+t.dataset.i); return refreshQuiz(sid, qi); }
+  if (act === 'ord-reset') { qaOf(sid, qi).seq = []; return refreshQuiz(sid, qi); }
+  if (act === 'ord-check') {
+    const s = qaOf(sid, qi), q = stepOf(sid).quiz[qi];
+    if ((s.seq || []).length < q.items.length) { document.getElementById(`err-${sid}-${qi}`).textContent = 'すべての項目を順にタップしてから、答え合わせをしてください。'; return; }
+    s.ok = s.seq.every((v, k) => v === k); s.done = true; return refreshQuiz(sid, qi);
+  }
+  if (act === 'model') { const s = qaOf(sid, qi); s.shown = true; return refreshQuiz(sid, qi); }
+  if (act === 'rate') { const s = qaOf(sid, qi); s.rate = t.dataset.v; s.done = true; s.ok = s.rate === 'ok'; return refreshQuiz(sid, qi); }
+  if (act === 'gate') {
+    S.gate = !S.gate;
+    document.getElementById('gatefig').classList.toggle('on', S.gate);
+    t.textContent = S.gate ? '電圧をやめる' : '門に電圧をかける'; t.setAttribute('aria-pressed', S.gate);
+    const gs = document.getElementById('gatestate'); gs.textContent = S.gate ? '電気が流れている' : '電気は流れない'; gs.style.color = S.gate ? 'var(--electron)' : 'var(--ink-3)';
+    app.querySelectorAll('.src-e').forEach((c, i) => c.style.opacity = S.gate && i % 2 ? .35 : 1);
+    return;
+  }
+  if (act === 'bit') { const i = +t.dataset.i; S.bits[i] = S.bits[i] ? 0 : 1; return paintBits(); }
+  if (act === 'reset') {
+    if (!S.resetArmed) { S.resetArmed = true; t.textContent = 'もう一度押すと、進み具合を消します'; return; }
+    saved = { done: {} }; store.save(saved); S.pred = {}; S.qa = {}; S.resetArmed = false; render();
+  }
+});
+
+function boot() {
+  go((location.hash || '').slice(1) || 'map');
+  window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h && h !== S.view) go(h); });
+}
+</script>
+<script src="modules/A.js" charset="utf-8"></script>
+<script src="modules/B.js" charset="utf-8"></script>
+<script src="modules/C.js" charset="utf-8"></script>
+<script src="modules/D.js" charset="utf-8"></script>
+<script src="modules/E.js" charset="utf-8"></script>
+<script>boot();</script>
